@@ -1,39 +1,40 @@
-import React from 'react';
-import moment from 'moment';
-import 'moment/locale/ru';
+import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, isSameMonth, isToday } from 'date-fns';
+import ruLocale from 'date-fns/locale/ru';
 import './App.css';
 
 const Calendar = ({ date }) => {
-  moment.locale('ru'); 
-  const firstDayOfMonth = moment(date).startOf('month').startOf('week');
-  const lastDayOfMonth = moment(date).endOf('month').endOf('week');
+  const locale = ruLocale;
+  const startMonth = startOfMonth(date);
+  const startDate = startOfWeek(startMonth);
+  const endMonth = endOfMonth(date);
+  const endDate = endOfWeek(endMonth);
 
   const calendarRows = [];
-  let currentDate = firstDayOfMonth;
+  let currentDate = startDate;
 
-  while (currentDate.isSameOrBefore(lastDayOfMonth)) {
+  while (currentDate <= endDate) {
     const week = [];
     for (let i = 0; i < 7; i++) {
       week.push(
         <td
           key={currentDate.toString()}
           className={
-            !currentDate.isSame(date, 'month')
+            !isSameMonth(currentDate, date)
               ? 'ui-datepicker-other-month'
-              : currentDate.isSame(moment(), 'day')
+              : isToday(currentDate)
               ? 'ui-datepicker-today'
               : ''
           }
         >
-          {currentDate.format('D')}
+          {format(currentDate, 'd')}
         </td>
       );
-      currentDate.add(1, 'day');
+      currentDate = addDays(currentDate, 1);
     }
     calendarRows.push(<tr key={currentDate.toString()}>{week}</tr>);
   }
 
-  const weekDays = moment.weekdaysShort(true).map((day, index) => (
+  const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, index) => (
     <th key={index} scope="col" title={day}>
       {day}
     </th>
@@ -43,35 +44,34 @@ const Calendar = ({ date }) => {
     <div className="ui-datepicker">
       <div className="ui-datepicker-material-header">
         <div className="ui-datepicker-material-day">
-          {moment(date).format('dddd')}
+          {format(date, 'eeee', { locale })}
         </div>
         <div className="ui-datepicker-material-date">
           <div className="ui-datepicker-material-day-num">
-            {moment(date).format('D')}
+            {format(date, 'd')}
           </div>
           <div className="ui-datepicker-material-month">
-            {moment(date).format('MMMM')}
+            {format(date, 'MMMM', { locale })}
           </div>
           <div className="ui-datepicker-material-year">
-            {moment(date).format('YYYY')}
+            {format(date, 'yyyy')}
           </div>
         </div>
       </div>
       <div className="ui-datepicker-header">
         <div className="ui-datepicker-title">
           <span className="ui-datepicker-month">
-            {moment(date).format('MMMM')}
+            {format(date, 'MMMM', { locale })}
           </span>
-          &nbsp;
           <span className="ui-datepicker-year">
-            {moment(date).format('YYYY')}
+            {format(date, 'yyyy')}
           </span>
         </div>
       </div>
       <table className="ui-datepicker-calendar">
         <colgroup>
           {new Array(7).fill(null).map((_, index) => (
-            <col key={index} />
+            <col key={index} className={index === 5 || index === 6 ? 'ui-datepicker-week-end' : ''} />
           ))}
         </colgroup>
         <thead>
